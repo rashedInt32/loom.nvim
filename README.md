@@ -17,7 +17,7 @@ is already corrupted, and you never settle for anything less.
 *"Size matters not."* one small float holds EVERYTHING, and your dev server
 keeps running while you work.
 
-<!-- demo video goes here -->
+https://github.com/user-attachments/assets/9302c83e-0e47-4fd3-8ac0-0f9e18f6b99c
 
 Inspired by Superlogical's terminal multiplexer demo.
 
