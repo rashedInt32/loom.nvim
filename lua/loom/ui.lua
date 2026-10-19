@@ -349,7 +349,7 @@ function M.render(s, opts)
   if focus and opts.insert ~= false then
     vim.cmd("startinsert")
   end
-  M.sync_tmux()
+  M.sync_prefix()
 end
 
 function M.hide()
@@ -366,7 +366,7 @@ function M.hide()
   M.visible = false
   M.armed = false
   M.hiding = false
-  M.sync_tmux()
+  M.sync_prefix()
 end
 
 -- Whether this Neovim set @loom. It starts false on purpose: a Neovim that
@@ -396,6 +396,39 @@ function M.sync_tmux(force_off, reassert)
   else
     vim.system(cmd)
   end
+end
+
+-- Same guard for sluice: only a Neovim that turned the handoff on may turn it off.
+local sluice_state = false
+
+--- Tell sluice (the zmx-based tmux replacement) whether a loom pane has focus,
+--- through `sluice handoff on|off`. sluice then forwards the shared prefix key
+--- to Neovim instead of treating it as its own prefix. The marker carries this
+--- Neovim's pid, so sluice drops the handoff by itself if Neovim dies.
+function M.sync_sluice(force_off, reassert)
+  if not (config.options.sluice and vim.env.ZMX_SESSION) then
+    return
+  end
+  if vim.fn.executable("sluice") ~= 1 then
+    return
+  end
+  local on = not force_off and M.visible and M.current_pane() ~= nil
+  if on == sluice_state and not (reassert and on) then
+    return
+  end
+  sluice_state = on
+  local cmd = { "sluice", "handoff", on and "on" or "off", "--pid", tostring(vim.fn.getpid()) }
+  if force_off then
+    vim.system(cmd):wait(500) -- on exit, finish before Neovim goes away
+  else
+    vim.system(cmd)
+  end
+end
+
+--- Keep every prefix-sharing host in step: tmux via @loom, sluice via handoff.
+function M.sync_prefix(force_off, reassert)
+  M.sync_tmux(force_off, reassert)
+  M.sync_sluice(force_off, reassert)
 end
 
 --- The pane window under the cursor's window, as a term id.

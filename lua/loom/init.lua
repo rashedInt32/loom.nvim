@@ -70,9 +70,10 @@ function M.show()
     state.new_tab(s)
   end
   ui.render(s, { focus = true })
-  -- Set @loom again even if loom thinks it is set: something outside may
-  -- have cleared it, and opening loom is when the prefix must work.
-  ui.sync_tmux(false, true)
+  -- Set @loom (and the sluice handoff) again even if loom thinks it is set:
+  -- something outside may have cleared it, and opening loom is when the
+  -- prefix must work.
+  ui.sync_prefix(false, true)
   start_poll()
 end
 
@@ -302,17 +303,18 @@ local function autocmds()
       end
     end,
   })
-  -- Keep tmux's @loom in step with focus, including focus loom did not move.
+  -- Keep tmux's @loom and sluice's handoff in step with focus, including
+  -- focus loom did not move.
   vim.api.nvim_create_autocmd({ "WinEnter", "FocusGained" }, {
     group = group,
     callback = function()
-      vim.schedule(ui.sync_tmux)
+      vim.schedule(ui.sync_prefix)
     end,
   })
   vim.api.nvim_create_autocmd("VimLeavePre", {
     group = group,
     callback = function()
-      ui.sync_tmux(true)
+      ui.sync_prefix(true)
     end,
   })
   vim.api.nvim_create_autocmd("WinEnter", {

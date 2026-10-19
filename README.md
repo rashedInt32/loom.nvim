@@ -39,6 +39,14 @@ Needs Neovim 0.11 or newer and a Nerd Font for the icons.
 
 `<C-/>` or `<C-\>` shows and hides the float.
 
+A note on `<C-/>`, because it is a trap worth knowing about. Inside tmux,
+Ctrl+/ arrives as the legacy byte `0x1f`, which Neovim calls `<C-_>`, so the
+`<C-/>` binding never fires and the key stays free for whatever else wants it.
+Outside tmux, in a terminal speaking the kitty keyboard protocol, the same
+keypress arrives as `CSI 47;5u` and Neovim calls it `<C-/>` -- at which point
+loom takes it, and anything else bound to Ctrl+/ silently stops working. Set
+`toggle = { "<C-\\>" }` if that key is spoken for.
+
 Inside a loom terminal, press `<C-b>`, then one key:
 
 | Key | Action |
@@ -100,6 +108,7 @@ a server announces one.
     session = nil, prefix = nil, dim = nil,
   },
   tmux = true,         -- set the pane option @loom while a loom pane has focus
+  sluice = true,       -- same handoff for sluice, through `sluice handoff on|off`
 }
 ```
 
@@ -119,6 +128,15 @@ bind C-a send-keys C-a
 ```
 
 Everywhere else `C-a` stays the tmux prefix.
+
+## Sharing the sluice prefix
+
+[sluice](https://github.com/rashedInt32/sluice) is my tmux replacement on top
+of zmx. With `sluice = true` loom runs `sluice handoff on` while a loom pane has
+focus and `sluice handoff off` when focus leaves, so sluice forwards `C-a` to
+loom and keeps it as its own prefix everywhere else. Nothing to configure on
+the sluice side. The handoff carries Neovim's pid and ends by itself if Neovim
+dies.
 
 ## Tests
 

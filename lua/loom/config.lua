@@ -33,6 +33,9 @@ M.defaults = {
   -- Inside tmux, set the pane option @loom while a loom pane has focus, so a
   -- tmux binding can hand a shared prefix key (such as C-a) to loom.
   tmux = true,
+  -- Inside sluice (a zmx session), run `sluice handoff on|off` on the same
+  -- focus changes, so sluice forwards the shared prefix key to loom.
+  sluice = true,
 }
 
 M.options = vim.deepcopy(M.defaults)
